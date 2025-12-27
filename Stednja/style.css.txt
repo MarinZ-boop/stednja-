@@ -1,0 +1,36 @@
+:root {
+    --primary: #2563eb;
+    --success: #10b981;
+    --dark: #0f172a;
+    --gray: #f1f5f9;
+}
+
+body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f8fafc; color: var(--dark); margin: 0; padding: 20px; }
+.container { max-width: 500px; margin: 0 auto; }
+
+header { display: flex; justify-content: flex-end; }
+#adminLoginBtn { background: none; border: none; cursor: pointer; opacity: 0.5; }
+
+.hero { text-align: center; padding: 30px 0; }
+.hero h1 { font-size: 24px; margin-bottom: 10px; }
+
+.progress-box { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center; margin-bottom: 20px; }
+.amounts { font-size: 28px; font-weight: 800; margin-bottom: 10px; }
+.bar-bg { background: var(--gray); height: 16px; border-radius: 10px; overflow: hidden; }
+.bar-fill { background: var(--success); height: 100%; width: 0%; transition: width 1s ease-out; }
+
+.card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
+.quick-select { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; margin-bottom: 15px; }
+.quick-select button { padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; background: white; cursor: pointer; }
+.quick-select button:hover { background: var(--primary); color: white; }
+
+.form-group { display: flex; flex-direction: column; gap: 12px; }
+input, textarea { padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 16px; }
+#submitBtn { background: var(--primary); color: white; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; }
+
+.donation-item { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 5px solid var(--primary); }
+.donation-item small { color: #64748b; }
+
+.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 100; }
+.modal-content { background: white; padding: 30px; border-radius: 16px; width: 90%; max-width: 400px; }
+.danger { background: #ef4444; color: white; border: none; padding: 10px; margin-top: 20px; border-radius: 8px; width: 100%; }

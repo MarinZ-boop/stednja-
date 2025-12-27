@@ -1,0 +1,114 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, doc, onSnapshot, updateDoc, collection, addDoc, query, orderBy, limit, increment, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+// Tvoji podaci koje si poslao
+const firebaseConfig = {
+  apiKey: "AIzaSyAHken43hM4dEmCgDPhC-rNt0bii1HzXmQ",
+  authDomain: "moj-cilj.firebaseapp.com",
+  projectId: "moj-cilj",
+  storageBucket: "moj-cilj.firebasestorage.app",
+  messagingSenderId: "841578962922",
+  appId: "1:841578962922:web:f1305bcf16f9b2da359c93"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+// DOM ELEMENTI
+const currentEl = document.getElementById('current');
+const goalEl = document.getElementById('goal');
+const barFill = document.getElementById('bar-fill');
+const percentEl = document.getElementById('percent');
+const donationListEl = document.getElementById('donationList');
+
+// 1. REAL-TIME STATISTIKA (Osvježava se samo od sebe)
+onSnapshot(doc(db, "campaign", "stats"), (docSnap) => {
+    if (docSnap.exists()) {
+        const data = docSnap.data();
+        const pct = Math.round((data.current / data.goal) * 100);
+        
+        currentEl.innerText = data.current;
+        goalEl.innerText = data.goal;
+        barFill.style.width = Math.min(pct, 100) + "%";
+        percentEl.innerText = pct + "% ostvareno";
+        
+        if (pct >= 100) confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+    }
+});
+
+// 2. REAL-TIME LISTA ZADNJIH 10 DONACIJA
+const q = query(collection(db, "donations"), orderBy("time", "desc"), limit(10));
+onSnapshot(q, (snapshot) => {
+    donationListEl.innerHTML = "";
+    snapshot.forEach(d => {
+        const data = d.data();
+        const item = document.createElement('div');
+        item.className = "donation-item";
+        item.innerHTML = `<strong>${data.name}</strong>: ${data.amount} €<br><small>${data.msg}</small>`;
+        donationListEl.appendChild(item);
+    });
+});
+
+// 3. FUNKCIJA ZA BRZO BIRANJE IZNOSA (Gumbi 5, 10, 20...)
+window.setAmount = (n) => {
+    document.getElementById('amt').value = n;
+};
+
+// 4. SLANJE DONACIJE
+document.getElementById('submitBtn').onclick = async () => {
+    const amountInput = document.getElementById('amt');
+    const amount = parseInt(amountInput.value);
+    const nameInput = document.getElementById('donorName');
+    const name = document.getElementById('isAnon').checked ? "Anonimno" : (nameInput.value || "Anonimno");
+    const msg = document.getElementById('donorMsg').value || "Sretno!";
+
+    if (amount > 0) {
+        try {
+            await addDoc(collection(db, "donations"), {
+                amount, name, msg, time: new Date()
+            });
+            await updateDoc(doc(db, "campaign", "stats"), {
+                current: increment(amount)
+            });
+            alert("Hvala ti! Tvoja donacija je vidljiva.");
+            amountInput.value = "";
+            nameInput.value = "";
+        } catch (e) { alert("Greška: " + e.message); }
+    } else {
+        alert("Molim te unesi ispravan iznos.");
+    }
+};
+
+// 5. ADMIN LOGIN I UPRAVLJANJE
+document.getElementById('adminLoginBtn').onclick = async () => {
+    const email = prompt("Email:");
+    const pass = prompt("Lozinka:");
+    try {
+        await signInWithEmailAndPassword(auth, email, pass);
+        document.getElementById('adminPanel').style.display = 'flex';
+    } catch (e) { alert("Pristup odbijen!"); }
+};
+
+document.getElementById('saveGoalBtn').onclick = async () => {
+    const newGoal = parseInt(document.getElementById('newGoalInput').value);
+    if (newGoal > 0) {
+        await updateDoc(doc(db, "campaign", "stats"), { goal: newGoal });
+        alert("Cilj je promijenjen!");
+        document.getElementById('adminPanel').style.display = 'none';
+    }
+};
+
+document.getElementById('resetBtn').onclick = async () => {
+    if (confirm("Pažnja! Ovo briše sve podatke o donacijama. Nastaviti?")) {
+        await updateDoc(doc(db, "campaign", "stats"), { current: 0 });
+        const snaps = await getDocs(collection(db, "donations"));
+        snaps.forEach(async (d) => await deleteDoc(d.ref));
+        location.reload();
+    }
+};
+
+document.getElementById('closeAdmin').onclick = () => {
+    document.getElementById('adminPanel').style.display = 'none';
+};
