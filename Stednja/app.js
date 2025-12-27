@@ -111,4 +111,5 @@ document.getElementById('resetBtn').onclick = async () => {
 
 document.getElementById('closeAdmin').onclick = () => {
     document.getElementById('adminPanel').style.display = 'none';
+
 };
